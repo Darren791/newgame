@@ -1,0 +1,38 @@
+
+*** These modified files were found in JOE when it aborted on Sun Dec 25 14:53:11 2022
+*** JOE was aborted because the terminal closed
+
+*** File '(Unnamed)'
+center
+
+*** File '(Unnamed)'
+"--
+CmdHelp
+CmdHelp
+"--
+mark_read
+mark_read
+unread_count
+mark_all
+mark_all_unread
+mark_read
+is_unread
+
+*** File '(Unnamed)'
+commands.py
+models.py
+boards.py
+commands.
+commands.py
+commands.py
+managers.py
+boards.py
+boards.py
+models.py
+boards.py
+
+*** File '* Startup Log *'
+Processing '/etc/joe/joerc'...
+Processing '/etc/joe/ftyperc'...
+Finished processing /etc/joe/ftyperc
+Finished processing /etc/joe/joerc

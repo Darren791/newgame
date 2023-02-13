@@ -1,0 +1,17 @@
+#!/bin/sh
+FILE=$HOME/newgame/server/evennia.db3
+if [ ! -f "$FILE" ]; then
+    echo "Database does not exist. Please un evennia migrate"
+    exit
+fi
+for d in */ ; do
+    echo "$d cleaned!"
+    rm -fR ${d}migrations
+    DET = "${d#$'/'}"
+    echo Migrations for... "${DET}}"
+    echo Migrations for "${DET}"
+    evennia makemigrations "${DET}"
+done
+
+evennia makemigrations
+evennia migrate

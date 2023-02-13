@@ -1,0 +1,50 @@
+
+*** These modified files were found in JOE when it aborted on Wed Jan 25 19:44:52 2023
+*** JOE was aborted by UNIX signal 15
+
+*** File '(Unnamed)'
+center
+
+*** File '(Unnamed)'
+unread_count
+mark_all
+mark_all_unread
+mark_read
+CMdWHo
+unread
+aliases
+aliases
+add_alias
+alias
+cemt
+
+*** File '(Unnamed)'
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+rooms.py
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+pmatch.py
+
+*** File '* Startup Log *'
+Processing '/etc/joe/joerc'...
+Processing '/etc/joe/ftyperc'...
+Finished processing /etc/joe/ftyperc
+Finished processing /etc/joe/joerc

@@ -1,0 +1,17 @@
+"""
+Fuck off with the warnings.
+"""
+
+# Type bitmask
+
+HS_SHIP = 0x01
+HS_CELESTIAL = 0x02
+HS_DEBRIS = 0x04
+HS_MISSILE = 0x08
+HS_GATE = 0x10
+
+
+DROPPED = 0x2000
+DOCKED =  0x0002
+DESTROYED = 0x0004
+GATING = 0x0008

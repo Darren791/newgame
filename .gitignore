@@ -1,0 +1,4 @@
+server/evennia.db3
+server/conf/*
+server/logs/*
+*.pyc

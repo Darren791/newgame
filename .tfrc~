@@ -1,0 +1,3 @@
+/def -ag -mglob -p100 -t"FugueEdit > *" fe = /grab %-2
+/set wrapsize=80
+/set wrapspace=0

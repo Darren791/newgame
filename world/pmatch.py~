@@ -1,0 +1,138 @@
+from evennia import ObjectDB, AccountDB
+from typeclasses.characters import Character
+from evennia.utils import make_iter
+from world.utils import parse_int_or_dbref, cemit_debug
+from evennia.utils import inherits_from
+
+
+def pmatch(name, **kwargs):
+    """
+      Match players by Account or Character, by name, alias, or dbref,
+      optionally filtering by connected status.
+
+      Depending on args, returns either an AccountDB or ObjectDB reference,
+      or None.
+
+      Credits:
+        Darren@Seventh Sea MUSH
+    """
+    
+    # kwargs
+    player = kwargs.get("player", None)
+    match_account = kwargs.get("match_account", False)
+    exclude = make_iter(kwargs.get("exclude", ()))
+    online = kwargs.get("online", False)
+
+    # If they supplied a 'player' arg, verify that it is a character or account object.
+    if player and not inherits_from(player, Character) or not inherits_from(player, AccountDB):
+        player = None
+        
+    # Did they pass a dbref or an int?
+    if num := parse_int_or_dbref(name):
+        # Match the account or character by id.
+        match = match_by_num(name, match_account)
+    else:
+        # Check for 'me' and 'self'.
+        if player and name in ("me", "self"):
+            match = player
+        else:
+            match = match_player_by_name(name, online=online)
+    
+    cemit_debug("", f"Match={match}")
+    if match_account and hasattr(match, 'account'):
+        cemit_debug("**", "match_acccount and hasattr account")
+        return match.account
+    else:
+        cemit_debug("**", "No match account")
+        return match
+
+
+def match_by_num(target: int, is_account: bool = False):
+    try:
+        if is_account:
+            match = AccountDB.objects.get(pk=target)
+        else:
+            match = ObjectDB.objects.get(pk=target)
+    except:
+        match = None
+        
+    #cemit_debug("", f"m_b_n: {target} -- {'A' if is_account else 'O'}")
+        
+    return match
+    
+#def match_account_by_num(num: int):
+#    try:
+#        match = AccountDB.objects.get(pk=num)
+#    except:
+#        match = None
+#
+#    return match
+
+
+#def match_player_by_num(num: int):
+#    try:
+#        match = ObjectDB.objects.get(pk=num)
+#    except:
+#        match = None
+#
+#    if match and inherits_from(match, Character):
+#        return match
+#
+#    return None
+
+
+def match_account_by_name(name: str):
+    # Look for a match/matches.
+    matches = AccountDB.objects.filter(db_key__startswith=name)
+    if not matches:
+        # If no matches, try a lookup by alias.
+        matches = AccountDB.objects.filter(
+            db_tags__db_tagtype__iexact="alias",
+            **{"db_tags__db_key__iexact": name})
+
+    # Since we're filtering by starts_with, we need to check for
+    # an exact match, otherwise names like 'Darren' and 'Darren1'
+    # would collide.
+    if matches.count() > 1:
+        matches = list(filter(lambda x: x==name, matches))
+        if len(matches) == 1:
+            matches = matches[0]
+
+    # Do not allow multiple or zero matches.            
+    if matches.count() != 1:
+        return None
+        
+    return matches.first()
+
+
+def match_player_by_name(name: str, online: bool = False):
+    # Use startswith instead of iexact so we can do 
+    # partial name matching without additional processing.
+    matches = Character.objects.filter(db_key__startswith=name)
+    
+    # If there were multiple matches, refine the search by
+    # checking for an exact name match. 
+    if matches.count() > 1:
+        matches = matches.filter(db_key__iexact=name)
+    
+    # If we were unsuccessful, try matching on aliases.
+    if not matches:
+        matches = Character.objects.filter(
+            db_tags__db_tagtype__iexact="alias",
+            **{"db_tags__db_key__iexact": name})
+
+    return matches.first() if matches.count() == 1 else None
+
+
+def match_players(targets=None, delim=',', online=False):
+    """ Match a comma-separated list of player names/alias. """
+
+    if not targets:
+        return None
+
+    matches = []
+    for x in make_iter(targets).split(delim):
+        if target := pmatch(x.strip()):
+            if online and target.sessions.count() > 0 or not online:
+                matches.add(target)
+    return matches
