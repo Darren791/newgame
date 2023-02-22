@@ -1,4 +1,5 @@
 from evennia import default_cmds
+from space.objects import SpaceInstance
 
 class SpaceCommand(default_cmds.MuxCommand):
     key = "sdb"
@@ -25,7 +26,6 @@ class SpaceCommand(default_cmds.MuxCommand):
             self.msg(f"The '{self.cmdname}' command does not take the '{switch}' switch.")
             return
         
-        sobj =  
         fun = getattr(self, f"do_{switch}", None)
         if fun and callable(fun):
             fun()

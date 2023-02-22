@@ -30,6 +30,7 @@ from typeclasses.places.cmdset_places import DefaultCmdSet
 from chargen.sheet import CmdSheet
 from chargen.commands import CmdSkill
 from .help import CmdHelp
+from space.commands import SpaceCommand
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """alias gall="git add * && git commit -m "." && git push"
@@ -77,7 +78,9 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdResGen())
         self.add(CmdTest())
         self.add(CmdResList())
+        self.add(SpaceCommand())
         
+           
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """
     This is the cmdset available to the Account at all times. It is

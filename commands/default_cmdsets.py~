@@ -75,7 +75,8 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdSkill())
         self.add(CmdRoom())
         self.add(CmdResGen())
-        self.add(CmdHelp())
+        self.add(CmdTest())
+        self.add(CmdResList())
         
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """
@@ -99,6 +100,7 @@ class AccountCmdSet(default_cmds.AccountCmdSet):
         self.add(CmdStyle)
         self.add(BoardCmdSet())
         self.add(CmdJobs())
+        self.add(CmdHelp())
 
 
 class UnloggedinCmdSet(default_cmds.UnloggedinCmdSet):
