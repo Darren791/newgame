@@ -1,11 +1,36 @@
 from evennia import default_cmds
-from space.objects import SpaceInstance
+from world.utils import cemit
+from evennia import GLOBAL_SCRIPTS
+from .script import get_state
+
+STATE = get_state()
 
 class SpaceCommand(default_cmds.MuxCommand):
     key = "sdb"
-    switchtab = ("add", "remove", "list",)
+    switchtab = ("add", "remove", "list", "stats", "save", "load", "start", "stop",)
     sobj = None
+    space = GLOBAL_SCRIPTS.space_script
 
+    def do_stats(self):
+        self.space.get_status(self.caller)
+
+    def do_load(self):
+        self.space.save_state()
+        cemit("space", "State data synced to disk.")
+
+    def do_save(self):
+        self.space.save_state()
+        cemit("space", "State data read from disk.")
+
+
+    def do_start(self):
+        self.space.active = True
+        self.msg("Space is now cycling.")
+        cemit("space", "Space is now active.")
+
+    def do_stop(self):
+        self.space.active = False
+        cemit("space", "Space has stopped cycling.")
 
     def do_add(self):
         self.caller.msg("ADD")
@@ -21,7 +46,6 @@ class SpaceCommand(default_cmds.MuxCommand):
         """ Command entry point. """
 
         switch = self.switches[0] if self.switches else "list"
-
         if switch and switch not in self.switchtab:
             self.msg(f"The '{self.cmdname}' command does not take the '{switch}' switch.")
             return
@@ -30,4 +54,4 @@ class SpaceCommand(default_cmds.MuxCommand):
         if fun and callable(fun):
             fun()
         else:
-            self.msg(f"There was an error nonlocalling the switch handler: {switch}")
+            self.msg(f"There was an error calling the switch handler: {switch}")

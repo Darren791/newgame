@@ -1,52 +1,66 @@
 from evennia import DefaultScript
-from .objects import SPACE
+from .objects import DBVERSION, SPACEDB, SpaceInstance
 from world.utils import cemit
-from os.path import exists
 from .objects import HSObject
 import pickle
+import os.path
+
+STATE = None
 
 class SpaceScript(DefaultScript):
     """ Timer and data store """
-
     def at_script_creation(self) -> None:
         """Called once, when script is first created"""
         self.key = "space"
         self.desc = "Space script"
         self.interval = 2  # 2 sec tick
-        self.universes = []
 
-    
+    def load_state(self):
+        global STATE
+
+        with open(SPACEDB, "rb") as f:
+            STATE = pickle.load(f)
+
+    def save_state(self):
+        with open(SPACEDB, "wb") as f:
+            pickle.dump(STATE, f)
+
+    def get_status(self, player):
+        player.msg("STATS:")
+        player.msg(f"STATE={STATE}")
+        player.msg(f"Ships={STATE.ship_list}")
+
     def at_server_start(self):
-        cemit("space", "START")
-        global SPACE
+        global STATE
 
-        if not SPACE:
-            if exists("space/space.bin"):
-                with open("space/space.bin", "rb") as f:
-                    SPACE = pickle.load(f)
-                    cemit("space", "State file read")
-            else:
-                SPACE = SPACE.new()
-                cemit("space", "State file not found. Initializing default.")
+        if os.path.isfile(SPACEDB):
+            self.load_state()
+        else:
+            STATE = SpaceInstance();
+            self.save_state()
 
-   
+        self.active = False
+        cemit("space", f"STATE={STATE}")
+
     def at_repeat(self):
-        """ Called once every tick """
-        #cemit("space", "TICK")
-        for x in SPACE.ship_list:
-            """ Cycle through each universe, updating all objects """
-            try:
-                x.cycle()
-            except Exception as e:
-                # add logging here to channel
-                continue
+        if self.active:
+            cemit("space", "PING")
+            for x in STATE.ship_list or []:
+                try:
+                    x.cycle()
+                except Exception as e:
+                    cemit("space", f"Exception in at_repeat(): {e}.")
+                    continue
 
     def on_add(self, sobj: HSObject) -> None:
         sobj.activate()
-        self.sync()
 
 
     def on_del(self, sobj: HSObject) -> None:
         sobj.deactivate()
-        self.sync()
+
+
+
+def get_state():
+    return STATE
 

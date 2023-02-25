@@ -2,6 +2,9 @@ from enum import Enum
 import pickle
 from world.utils import cemit
 
+DBVERSION = "1.0"
+SPACEDB = "space/space.bin"
+
 class HSObjectType(Enum):
     GENERIC = 0
     PLANET = 1
@@ -11,7 +14,7 @@ class HSObjectType(Enum):
     CARGOPOD = 5
     NEBULA = 6
     ASTEROIDS = 7
-    END = 8
+
 
 HSOT = HSObjectType
 
@@ -23,7 +26,7 @@ class SpaceInstance(object):
     deletions = []
     active = False
     clean = True
-    interval = 2
+    version = DBVERSION
 
     def __init__(self, *args):
         self.ship_list = []
@@ -32,11 +35,6 @@ class SpaceInstance(object):
         self.deletions = []
         self.active = False
         self.clean = False
-        self.interval = 2
-        self.save()
-        self.load()
-        self.save()
-
 
     def add_object_to_space(self, sobj):
         pass
@@ -47,15 +45,15 @@ class SpaceInstance(object):
 
 
     def load(self):
-        with open("space/space.bin", "rb") as f:
-            SpaceInstance = pickle.load(f)
-        cemit("space", "LOAD")
+        with open(SPACEDB, "rb") as f:
+            SPACE= pickle.load(f)
+        cemit("space", "Loaded state file.")
         
     
     def save(self):
         with open("space/space.bin", "wb") as f:
-            pickle.dump(SpaceInstance, f)
-            cemit("space", "DUMP")
+            pickle.dump(SPACE, f)
+            cemit("space", "Saved state file.")
             
     
     def cycle(self):
@@ -83,16 +81,19 @@ class HSObject:
     def on_activate(self):
         pass
 
+
     def on_deactivate(self):
         pass
+
 
     def on_add(self):
         pass
 
+    
     def on_delete(self):
         pass
 
+    
     def cycle(self):
         pass
 
-SPACE = None
