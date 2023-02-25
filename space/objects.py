@@ -1,5 +1,4 @@
 from enum import Enum
-import pickle
 from world.utils import cemit
 
 DBVERSION = "1.0"
@@ -17,7 +16,8 @@ class HSObjectType(Enum):
 
 
 HSOT = HSObjectType
-
+NAME = 'eSpace'
+VERSION = "0.2"
 
 class SpaceInstance(object):
     ship_list = []
@@ -27,6 +27,7 @@ class SpaceInstance(object):
     active = False
     clean = True
     version = DBVERSION
+    loaded = False
 
     def __init__(self, *args):
         self.ship_list = []
@@ -43,19 +44,6 @@ class SpaceInstance(object):
     def remove_object_from_space(self, sobj):
         pass
 
-
-    def load(self):
-        with open(SPACEDB, "rb") as f:
-            SPACE= pickle.load(f)
-        cemit("space", "Loaded state file.")
-        
-    
-    def save(self):
-        with open("space/space.bin", "wb") as f:
-            pickle.dump(SPACE, f)
-            cemit("space", "Saved state file.")
-            
-    
     def cycle(self):
 
         if self.insertions:
@@ -66,15 +54,14 @@ class SpaceInstance(object):
             try:
                 sl.cycle()
             except Exception as e:
-                    contiue
+                    continue
         if self.deletions:
-            remove_object_from_space(sl)        
-
+            pass
 
     
 class HSObject:
     def __init__(self, **args):
-        self.type = args.get('name', 'Unknown')
+        self.type = HSOT.GENERIC
         self.key = 0
 
     
