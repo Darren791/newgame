@@ -51,6 +51,10 @@ class Character(
 
     """
 
+    @property
+    def typestr(self):
+        return 'C'
+
     @lazy_property
     def ilocks(self):
         return iLockManager(self)
@@ -90,6 +94,13 @@ class Character(
                 'SCREENWIDTH', {0: settings.CLIENT_DEFAULT_WIDTH}
             )[0]
         return settings.CLIENT_DEFAULT_WIDTH
+
+    def at_before_puppet(self, account, session=None, **kwargs):
+        try:
+            tmp = self.options
+            tmp = self.account.options
+        except:
+            pass
 
     def at_post_unpuppet(self, account, session=None, **kwargs):
         # Clear places.

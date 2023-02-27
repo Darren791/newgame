@@ -2,7 +2,9 @@ from evennia import default_cmds
 from world.utils import cemit
 from evennia import GLOBAL_SCRIPTS
 from .script import get_state
+from evennia.utils import inherits_from
 
+from .typeclasses import DefaultSpaceObject
 STATE = get_state()
 
 class SpaceCommand(default_cmds.MuxCommand):
@@ -33,8 +35,15 @@ class SpaceCommand(default_cmds.MuxCommand):
         cemit("space", "Space has stopped cycling.")
 
     def do_add(self):
-        self.caller.msg("ADD")
+        if not self.rhs and not self.lhs:
+            self.msg("Usage: sdb/add <objectid>=<typeclass>")
+            return
         
+        marker = self.search(self.lhs, typeclass=GenericSpaceObject)
+        if not marker or not inherits_from(smarker, GenericSpaceObject):
+            self.msg("No such object or wrong type.")
+            return
+
     def do_remove(self):
         self.caller.msg("REMOVE")
         

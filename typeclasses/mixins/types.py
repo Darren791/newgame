@@ -1,5 +1,9 @@
 class TypeMixins(object):
     @property
+    def typestr(self):
+        return 'O'
+
+    @property
     def is_guest(self):
         return False
 

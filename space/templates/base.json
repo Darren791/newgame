@@ -1,0 +1,10 @@
+{
+    "name": "Ares",
+    "size": 1,
+    "hull_points": 10,
+    "weapons": {
+        "Laser Cannon" : {"strength": 10, "range": 10, "recharge": 10}
+    }
+        
+    
+}

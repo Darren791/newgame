@@ -67,7 +67,7 @@ def sort_exits(elist: list) -> list:
         else:
             untagged.append([x, x.key])
 
-    if agged:
+    if tagged:
         out += sorted(tagged, key=lambda i: i[1])
 
     if untagged:
@@ -90,8 +90,10 @@ def format_players(looker, width=80, users=None):
         shortdesc = ANSIString(x.db.sdesc or '')
         #if looker is x and not shortdesc:
         #    shortdesc = "(Use sdesc <description>' to set this)".center(width - 30)
-        if shortdesc and looker.options.crop_shortdescs:
-            shortdesc = utils.crop(shortdesc, width - 30)
+        if shortdesc:
+            if looker.options.get('crop_shortdescs', False):
+                shortdesc = utils.crop(shortdesc, width - 30)
+
 
         if x.attributes.has('sitting_at_table'):
             p_name = f"{x.key} ({x.db.sitting_at_table})"
@@ -125,6 +127,10 @@ class Room(MessageMixins, NameMixins, OwnerMixins, TypeMixins, DefaultRoom):
     See examples/object.py for a list of
     properties and methods available on all Objects.
     """
+
+    @property
+    def typestr(self):
+        return 'R'
 
     @lazy_property
     def options(self):
@@ -238,6 +244,7 @@ class Room(MessageMixins, NameMixins, OwnerMixins, TypeMixins, DefaultRoom):
         """
         if not looker:
             return ""
+        tmp = looker.options or None
 
         # get and identify all objects
         visible = (con for con in self.contents if con != looker and con.access(looker, "view"))
@@ -315,6 +322,7 @@ class Room(MessageMixins, NameMixins, OwnerMixins, TypeMixins, DefaultRoom):
         """
         # Cache the looker's screenwidth.
         screenwidth = looker.screenwidth
+        tmp = looker.options or None
 
         # Get and identify all objects. This needs to be replaced with
         # the new visible_contents method that knows about dark and

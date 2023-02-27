@@ -161,6 +161,9 @@ def footer(text, player, width=settings.CLIENT_DEFAULT_WIDTH) -> str:
 
 def multiheader(lhs: str, rhs: str, player, width: int=settings.CLIENT_DEFAULT_WIDTH) -> str:
     o = player.options
+    if not o:
+        return ''
+
     actual: int = 0
 
     actual = width - (len(strip_ansi(lhs)) + len(strip_ansi(rhs)) + 12)

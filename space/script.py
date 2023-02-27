@@ -14,30 +14,16 @@ class SpaceScript(DefaultScript):
         if sobj in self.deletions:
             return
 
-        if sobj.type == HSOT.SHIP:
-            if sobj not in self.ship_list:
-                self.ship_list.append(sobj)
-                self.on_add(sobj)
-                sobj.on_add()
-        else:
-            if sobj not in self.object_list:
-                self.object_list.append(sobj)
-                self.on_add(sobj)
-                sobj.on_add()
-
+        if sobj not in self.insertions:
+           self.insertions.append(sobj)
 
 
     def del_object(self, sobj):
-        if sobj.type == HSOT.SHIP:
-            if sobj in self.ship_list:
-                self.ship_list.remove(sobj)
-                self.on_del(sobj)
-                sobj.on_del()
-            else:
-                if sobj in self.object_list:
-                    self.object_list.remove(sobj)
-                    self.on_del(sobj)
-                    sobj.on_del()
+        if sobj in self.insertions:
+            return
+
+        if sobj not in self.deletions:
+            sobj.deletions.append(sobj)
 
     """ Timer and data store """
     def at_script_creation(self) -> None:
@@ -59,9 +45,14 @@ class SpaceScript(DefaultScript):
             pickle.dump(STATE, f)
 
     def get_status(self, player):
-        player.msg("STATS:")
-        player.msg(f"STATE={STATE}")
-        player.msg(f"Ships={STATE.ship_list}")
+        tmp = f'{NAME} version {VERSION} Stats:'
+        player.msg(tmp)
+        player.msg("-" * len(tmp))
+        player.msg(f'Is Loaded: {"True" if STATE.has_state else "False"}')
+        player.msg(f'Has State: {"True" if STATE else "False"}')
+        player.msg(f'  # Ships: {len(STATE.ship_list)}')
+        player.msg(f'# Objects: {len(STATE.object_list)}')
+
 
     def at_server_start(self):
         global STATE
@@ -71,7 +62,7 @@ class SpaceScript(DefaultScript):
         if os.path.isfile(SPACEDB):
             self.load_state()
             if not self.has_state:
-                cemit("space", "Failed to initialize state handler.")
+                cemit("space", "|RFailed to initialize state handler.|n")
                 self.active = False
                 return
         else:
@@ -81,10 +72,17 @@ class SpaceScript(DefaultScript):
 
         self.active = False
         if self.has_state:
-            cemit("space", "Initialization successful. Not cycling.")
+            cemit("space", "Initialization was |GSUCCESSFUL|n.")
+            cemit("space", f"Cycling is {'|GENABLED|n' if STATE.active else '|RDISABLED|n'}.")
         else:
             cemit("space", "Initialization was not successful.")
+            return
 
+        cemit("space", "Loading objects...")
+        count = 12
+        cemit("space", f"Done loading {count} object(s).")
+        if not STATE.active:
+            cemit("space", "Use \'|Csdb/start|n\' to enable cycling.")
     def at_repeat(self):
         if self.active:
             cemit("space", "PING")
@@ -92,7 +90,7 @@ class SpaceScript(DefaultScript):
                 try:
                     x.cycle()
                 except Exception as e:
-                    cemit("space", f"Exception in at_repeat(): {e}.")
+                    cemit("space", f"E: at_repeat(): {e}.")
                     continue
 
     def on_add(self, sobj: HSObject) -> None:

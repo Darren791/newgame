@@ -25,7 +25,7 @@ class NameMixins(object):
 
         """
         if self.locks.check_lockstring(looker, "perm(Builder)"):
-            return f"{self.name}(#{self.id})"
+            return f"{self.name}(#{self.typestr}{self.id})"
         return self.name
 
     # Like get_display_name but doesn't check permissions.  Sometimes you
@@ -33,7 +33,7 @@ class NameMixins(object):
 
     @property
     def name_and_dbref(self):
-        return f"{self.key}(#{self.id})"
+        return f"{self.key}(#{self.typestr}{self.id})"
 
     # Returns the object name and shortest alias
     @property

@@ -105,7 +105,10 @@ class Account(DecoratorMixins, NameMixins, PlayerMixins, TypeMixins, DefaultAcco
     @property
     def is_account(self):
         return True
-
+    @property
+    def typestr(self):
+        return 'A'
+    
     @property
     def is_guest_account(self):
         return False
