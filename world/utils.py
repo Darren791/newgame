@@ -31,7 +31,7 @@ def twocol(items, width=80):
         if i:
             out += "\n"
         index += 1    
-    return f"{out}\n"
+    return f"{out}"
 
 
 def itemize(items, prep='and', sep=', '):

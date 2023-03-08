@@ -1,4 +1,4 @@
-from evennia import default_cmds, CmdSet
+
 from world.genders import _GENDER_PRONOUN_MAP
 from datetime import datetime
 from evennia.server.sessionhandler import SESSIONS
@@ -16,7 +16,7 @@ from typeclasses.objects import Object
 from typeclasses.characters import Character
 import sys
 from world.utils import cemit_debug
-
+from evennia import default_cmds, CmdSet
 
 _AT_SEARCH_RESULT = utils.variable_from_module(
     *settings.SEARCH_AT_RESULT.rsplit(".", 1)
@@ -155,9 +155,10 @@ class CmdWho(default_cmds.MuxCommand):
         caller = self.caller
         
         caller.msg(headers.banner('Fallout MUSH Connected Players', player=caller, width=80))
-        caller.msg(f"|b|||n{' ' * 78}|b|||n".center(78))
-        caller.msg(f"|b|||n|w{'** Please remember that this game is still in pre-alpha! **'.center(78)}|b|||n")
-        caller.msg(f"|b|||n{' ' * 78}|b|||n".center(78))
+        color = caller.options.border_color
+        caller.msg(f"|{color}|||n{' ' * 78}|{color}|||n".center(78))
+        caller.msg(f"|{color}|||n|w{'** Please remember that this game is still in pre-alpha! **'.center(78)}|{color}|||n")
+        caller.msg(f"|{color}|||n{' ' * 78}|{color}|||n".center(78))
         table = self.styled_table("NAME", "S", "CONN", "IDLE", "ORG", "REGION", width=80)
         for x in USERINFO:
             table.add_row(*x)

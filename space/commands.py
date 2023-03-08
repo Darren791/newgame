@@ -3,13 +3,15 @@ from world.utils import cemit
 from evennia import GLOBAL_SCRIPTS
 from .script import get_state
 from evennia.utils import inherits_from
-
+from .templates import match_class
 from .typeclasses import DefaultSpaceObject
+from .objects import HSShip
 STATE = get_state()
+from .script import SpaceScript as SPACE
 
 class SpaceCommand(default_cmds.MuxCommand):
     key = "sdb"
-    switchtab = ("add", "remove", "list", "stats", "save", "load", "start", "stop",)
+    switchtab = ("addship", "delship", "list", "stats", "save", "load", "start", "stop",)
     sobj = None
     space = GLOBAL_SCRIPTS.space_script
 
@@ -34,17 +36,31 @@ class SpaceCommand(default_cmds.MuxCommand):
         self.space.active = False
         cemit("space", "Space has stopped cycling.")
 
-    def do_add(self):
+    def do_addship(self):
         if not self.rhs and not self.lhs:
-            self.msg("Usage: sdb/add <objectid>=<typeclass>")
+            self.msg("Usage: sdb/add <class>=<name>")
             return
-        
-        marker = self.search(self.lhs, typeclass=GenericSpaceObject)
-        if not marker or not inherits_from(smarker, GenericSpaceObject):
-            self.msg("No such object or wrong type.")
+        klass = match_class(self.lhs)
+        if not klass:
+            self.msg("No such class.")
             return
 
-    def do_remove(self):
+        ship = HSShip()
+        klass.name = self.rhs
+
+        for x in (klass.__dict__.keys()):
+            if  not x.startswith("_"):
+                cemit("space", f"Setting {x} to {getattr(klass, x)}.")
+                setattr(ship, x, getattr(klass, x))
+
+
+        self.msg(f"{self.rhs} created.")
+        self.space.add_object(sobj=ship)
+
+
+        
+        
+    def do_delship(self):
         self.caller.msg("REMOVE")
         
     def do_list(self):

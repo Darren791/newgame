@@ -16,14 +16,15 @@ class SpaceScript(DefaultScript):
 
         if sobj not in self.insertions:
            self.insertions.append(sobj)
-
+        cemit("space", f"{sobj.name} scheduled for insertion.")
 
     def del_object(self, sobj):
         if sobj in self.insertions:
             return
 
         if sobj not in self.deletions:
-            sobj.deletions.append(sobj)
+            sobj.deletions.append(sobj) 
+        cemit("space", f"{sobj.name} scheduled for deletion.")
 
     """ Timer and data store """
     def at_script_creation(self) -> None:
@@ -32,6 +33,8 @@ class SpaceScript(DefaultScript):
         self.desc = "Space script"
         self.interval = 2  # 2 sec tick
         self.has_state = False
+        self.deletions = []
+        self.insertions = []
 
     def load_state(self):
         global STATE
@@ -48,15 +51,20 @@ class SpaceScript(DefaultScript):
         tmp = f'{NAME} version {VERSION} Stats:'
         player.msg(tmp)
         player.msg("-" * len(tmp))
-        player.msg(f'Is Loaded: {"True" if STATE.has_state else "False"}')
-        player.msg(f'Has State: {"True" if STATE else "False"}')
+        player.msg(f'Is Loaded: {"True" if STATE else "False"}')
         player.msg(f'  # Ships: {len(STATE.ship_list)}')
         player.msg(f'# Objects: {len(STATE.object_list)}')
+
+    def at_server_reload(self):
+        cemit("space", "State saved.")
+        self.save_state()
 
 
     def at_server_start(self):
         global STATE
        
+        self.deletions = []
+        self.insertions = []
         cemit("space", f"Initializing {NAME} {VERSION}...")
         self.has_state = False
         if os.path.isfile(SPACEDB):
@@ -66,7 +74,7 @@ class SpaceScript(DefaultScript):
                 self.active = False
                 return
         else:
-            STATE = SpaceInstance();
+            STATE = SpaceInstance()
             self.has_state = True
             self.save_state()
 
@@ -83,21 +91,34 @@ class SpaceScript(DefaultScript):
         cemit("space", f"Done loading {count} object(s).")
         if not STATE.active:
             cemit("space", "Use \'|Csdb/start|n\' to enable cycling.")
+
     def at_repeat(self):
-        if self.active:
-            cemit("space", "PING")
+        for x in self.insertions:
+            try:
+                if x not in STATE.ship_list:
+                    STATE.ship_list.append(x)
+                self.insertions.remove(x)
+                x.on_add()
+            except Exception  as e:
+                cemit("space", f"Error in at_repeat(): {e}.")
+
+        #cemit("space", "PING")
+        if STATE.active or True:
             for x in STATE.ship_list or []:
                 try:
                     x.cycle()
+                    cemit("space", f"Ship: {x.name}")
                 except Exception as e:
-                    cemit("space", f"E: at_repeat(): {e}.")
+                    cemit("space", f"Error in at_repeat(): {e}.")
                     continue
 
     def on_add(self, sobj: HSObject) -> None:
+        cemit("space", f"{sobj} was added to the active list.")
         sobj.activate()
 
 
     def on_del(self, sobj: HSObject) -> None:
+        cemit("space", f"{sobj} was removed from the active list.")
         sobj.deactivate()
 
 
