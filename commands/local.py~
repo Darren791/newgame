@@ -1,4 +1,4 @@
-from evennia import default_cmds, CmdSet
+
 from world.genders import _GENDER_PRONOUN_MAP
 from datetime import datetime
 from evennia.server.sessionhandler import SESSIONS
@@ -16,6 +16,8 @@ from typeclasses.objects import Object
 from typeclasses.characters import Character
 import sys
 from world.utils import cemit_debug
+from evennia import default_cmds, CmdSet
+
 _AT_SEARCH_RESULT = utils.variable_from_module(
     *settings.SEARCH_AT_RESULT.rsplit(".", 1)
 )
@@ -116,19 +118,24 @@ class CmdLast(default_cmds.MuxCommand):
 
         self.caller.msg(str(table))
 
+import random
+def rainbow_word(source):
+    out = ''
+    for x in source:
+        out += f"|{random.choice(('r', 'g', 'y', 'b', 'm', 'c', 'w', 'n'))}{x}|n"
+    
+    return out
+
+# TIME=1:50
 USERINFO = (
+
+    ("Knight Austin Thomas", "M", "2h", "1s", "|rBOS|n", "The Prydwen"),
     ("|cDarren|n*", "M",     "1h", "1s", "ADM", "Darren's Office"),
-    ("Terry Malloy", "F",   "3h", "22s", "DC", "Diamond City"),
-    ("Knight Justin","M",  "8m", "41s", "|rBOS|n", "The Prydwen"),
-    ("Parker",              "F",    "1h", "|g1m|n", "DC", "Diamond City"),
-
-    ("Knight Austin Thomas", "M",  "2m", "|g2m|n", "|rBOS|n", "The Prydwen"),
-
-    ("Brother Chris Stevens", "M",  "18m", "|y5m|n", "DC", "Diamond City"),
-    ("Kevin Johnson", "M",    "23m", "|y12m|n", "DC", "Diamond City"),
-
-    ("|cGeneva|n*", "F",     "3h", "|r19m|n", "ADM", "OOC Lounge"),
-    ("Scribe Nancy Wright", "F",   "2h", "|r26m|n", "|rBOS|n", "The Prydwen"),
+    ("Terry Malloy", "F",   "1h", "6s", "DC", "Diamond City"),
+    ("Scribe Nancy Wright", "F",   "1h", "|g3m|n", "|rBOS|n", "The Prydwen"),
+    ("Parker",              "F",    "4h", "|y17m|n", "DC", "Diamond City"),
+    ("Kevin Johnson", "M",    "23m", "|y21m|n", "DC", "Diamond City"),
+    ("|cGeneva|n*", "F",     "2d", "|r24m|n", "ADM", "Geneva's Office"),
     ("John Proctor", "M",   "7h", "|r1h|n", "|MDC|n", "Diamond City"),
 )
 
@@ -147,20 +154,11 @@ class CmdWho(default_cmds.MuxCommand):
     def func(self):
         caller = self.caller
         
-        caller.msg(f"[|wPublic|n] |cJustin|n: Anyone else having trouble with the +harvest command?")
-        caller.msg(f"[|wPublic|n] |cTerry Malloy|n (to |cJustin|n): Not today!")
-        
-        caller.msg(f"[|rDebug|n] |yRES|n: Off-schedule resource generation initiated by |cDarren|n.")
-        caller.msg(f"[|rDebug|n] |yRES|n: Resource generation complete. 114/117 node(s).")
-        caller.msg(f"Account |cParker|n pages: It still isn't working. It keeps telling me that there are no resources to collect.")
-        caller.msg(f"[|wPublic|n] |cTerry Malloy|n: (So far) lol")
-
         caller.msg(headers.banner('Fallout MUSH Connected Players', player=caller, width=80))
-
-        caller.msg(f"|b||{' ' * 78}|b|||n".center(78))
-        
-        caller.msg(f"|b|||n|w{'** Please remember that this game is still in pre-alpha! **'.center(78)}|b|||n")
-        caller.msg(f"|b||{' ' * 78}|b|||n".center(78))
+        color = caller.options.border_color
+        caller.msg(f"|{color}|||n{' ' * 78}|{color}|||n".center(78))
+        caller.msg(f"|{color}|||n|w{'** Please remember that this game is still in pre-alpha! **'.center(78)}|{color}|||n")
+        caller.msg(f"|{color}|||n{' ' * 78}|{color}|||n".center(78))
         table = self.styled_table("NAME", "S", "CONN", "IDLE", "ORG", "REGION", width=80)
         for x in USERINFO:
             table.add_row(*x)
@@ -172,13 +170,11 @@ class CmdWho(default_cmds.MuxCommand):
         table.reformat_column(4, width=7, align="c")
         caller.msg(str(table))
 
-        output = ANSIString(f"** |c{len(USERINFO)}|n connected, |c{len(USERINFO)-2}|n unique, |c{len(USERINFO)}|n record **").center(78)
+        output = ANSIString(f"** |c{len(USERINFO)}|n connected, |c{len(USERINFO)-2}|n unique, |c{12}|n record **").center(78)
         caller.msg(f"|b|||n{output}|b|||n")
         
-        #caller.msg(headers.ubanner(f"|c{len(USERINFO)}|n connected, |c{len(USERINFO)-2}|n unique, |c{len(USERINFO)}|n record.", player=caller, width=80))
         caller.msg(headers.ubanner("", player=caller, width=80))
         caller.msg("")
-        caller.msg(f"[|wPublic|n] |cJustin|n: There it goes.")
 
 class CmdWho2(default_cmds.MuxCommand):
     """
@@ -1809,26 +1805,35 @@ class CmdFEdit(default_cmds.MuxCommand):
         if not self.lhs:
             self.caller.msg("Syntax: %s <object>" % self.cmdname)
             return
-        what = self.caller.search(self.lhs, location=self.caller.location)
 
-        # Just quit if we didn't find anything. The search will handle the error message.
+        if "/" in self.lhs:
+            obj, attr = self.lhs.split("/")
+        else:
+            obj = self.lhs
+            attr = None
+        what = self.caller.search(obj, location=self.caller.location)
         if not what:
             return
 
+        if attr:
+            edit_text = what.attributes.get(attr, "")
+        else:
+            edit_text = what.db.desc or ""
         # Make sure that the caller has permission to modify the object.
         if not what.access(self.caller, "control") or not what.access(
             self.caller, "edit"
         ):
             self.caller.msg(
-                "You don't have permission to modify the description of that object."
+                "You don't have permission to modify the attributes of that object."
             )
             return
 
         # If the attr isn't present on the object, obj.db.desc will be None and this will cause
         # problems for us when we go to edit, so we default to an empty string.
-        desc = what.db.desc or ""
-
-        self.caller.msg(f"FugueEdit > @desc #{what.id}={desc}", options={"raw": True})
+        if not attr:
+            self.caller.msg(f"FugueEdit > @desc #{what.id}={edit_text}", options={"raw": True})
+        else:
+             self.caller.msg(f"FugueEdit > @set #{what.id}/{attr}={edit_text}", options={"raw": True}) 
 
 
 class CmdFriend(default_cmds.MuxCommand):
@@ -2470,3 +2475,90 @@ class CmdMOTD(default_cmds.MuxCommand):
         self.caller.msg(headers.header("MOTD", player=self.caller, width=caller.screenwidth))
         self.caller.msg(f"{mdesc}\n")
         self.caller.msg(headers.footer("EOF", player=caller, width=caller.screenwidth))
+
+import random 
+from evennia import EvMenu
+
+def _select_random_node(caller, raw_string, **kwargs):
+    kwargs["visit_nr"] = kwargs.get("visit_nr", 1) + 1
+    next_node_name = random.choice(["first", "second"])
+    # the kwargs returned here will become **kwargs input to next node
+    return next_node_name, kwargs
+
+def node_first(caller, raw_string, **kwargs):
+    visit_nr = kwargs.get("visit_nr", 1)
+    text = f"The first node (visit #{visit_nr})." 
+    options = (
+        {"key": ("Continue", "C"),
+         "desc": "Move on to the next random node!",
+         "goto": (_select_random_node, kwargs)
+        }
+    )
+    return text, options
+
+def node_second(caller, raw_string, **kwargs):
+    visit_nr = kwargs.get("visit_nr", 1)
+    text = f"The second node (visit #{visit_nr})."
+    options = (
+        {"key": ("Continue", "C"),
+         "desc": "Randomize another node!",
+         "goto": (_select_random_node, kwargs)
+        }
+    )
+    
+class CmdTest(default_cmds.MuxCommand):
+    key = "test"
+
+    def func(self):
+        menu_nodes = {"first": node_first, "second": node_second}
+        EvMenu(self.caller, menu_nodes, startnode="first")
+        
+
+LOOTTABLES = (
+    ("Rad Scrubber",  4,  "Science:2", "Science", "Uncommon"),
+    ("Sensor Array", 5, "Science:3",  "Science", "Uncommon"),
+    ("Targeting HUD", 5, "Science:3",  "Science", "Uncommon"),
+    ("Internal Database", 4, "Science:2", "Science", "Uncommon"),
+    ("Welded Rebar (Raider only)", 2, "Armorer:1", "Repair", "Uncommon"),
+    ("Core Assembly", 5, "Science:3", "Science", "Uncommon"),
+    ("Blood Cleanser", 4, "Science:1", "Science", "Uncommon"),
+    ("Emergency Protocols", 6, "Science:4", "Science", "Uncommon"),
+    ("Motion-Assist Servos", 5, "Science:3", "Science", "Uncommon"),
+    ("Kinetic Dynamo", 6, "Science:4", "Science",  "Uncommon"),
+    ("Medic Pump", 6, "Science:4", "Science", "Uncommon"),
+    ("Reactive Plates", 5, "Armorer:4", "Repair", "Uncommon"),
+    ("Tesla Coils", 5, "Science:3", "Science", "Uncommon"),
+    ("Stealth Boy", 6, "Science:4", "Science", "Uncommon"),
+    ("Jetpack", 7, "Armorer:4\nScience:4", "Repair", "Uncommon"),
+    ("Rusty Knuckles", 2, "Blacksmith:1",  "Repair", "Uncommon"),
+    ("Hydraulic Bracers", 4, "Blacksmith:3",  "Repair",  "Uncommon"),
+    ("Optimized Bracers", 2,  "Blacksmith:1", "Repair", "Uncommon"),
+    ("Tesla Bracers", 6,  "Blacksmith:3\nScience:1", "Repair",  "Uncommon"),
+    ("Calibrated Shocks", 4, "Science:2", "Science", "Uncommon"),
+    ("Explosive Vent", 5, "Science:3",  "Science", "Uncommon"),
+    ("Overdrive Servos", 5, "Science:3", "Science", "Uncommon"),
+)
+
+
+class CmdResList(default_cmds.MuxCommand):
+    key = "listres"
+
+    def colorize(self, i, what):
+        return f"|{'C' if i % 2 else 'n'}{what}|n"
+
+    def func(self):
+        table = self.styled_table("POWER ARMOR ITEM", "CMP", "PERKS", "SKILL", "RARITY", width=80)
+        index = 0
+        for x in LOOTTABLES:
+            table.add_row(self.colorize(index, str(x[0])),
+            self.colorize(index, str(x[1])),
+            self.colorize(index, str(x[2])),
+            self.colorize(index, str(x[3])),
+            self.colorize(index, str(x[4])))
+            index = (index+1) % 2
+
+        table.reformat_column(0, width=32)
+        table.reformat_column(1, width=7, justify="r")
+
+        self.caller.msg(headers.banner("Power Armor Systems", self.caller, width=80))
+        self.caller.msg(str(table))

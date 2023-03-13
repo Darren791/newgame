@@ -1790,13 +1790,16 @@ class CmdBlock(default_cmds.MuxCommand):
 
 class CmdFEdit(default_cmds.MuxCommand):
     """
-    Syntax: @fedit <object>
-
-    Loads an object description into your MUSH-compatible client's command
-    line for fast, easy editing. This works with all clients, but some may
-    require that you define a trigger for it (MUSHclient, TinyFugue and BeipMU,
-    for example), or enable support by clicking a box in settings (Atlantis).
-    """
+    Syntax: @fedit <object>	# Default, edit an object's desc.
+            @fedit <object/<attr> # Edit the <attr> attribute of the object. 
+                                    Note that the value is converted to a
+                                    string, which may not be what you want.
+            
+    Uploads an object's DB attribute to your MUSH-compatible client's
+    command line for fast, easy editing.  This works with all clients that
+    support FugueEdit (which is most of them), but you may have to define a
+    trigger for it (MUSHclient, TinyFugue and BeipMU, for example), or
+    enable support by clicking a box in settings (Atlantis).  """
 
     key = "fedit"
     help_category = "General"
@@ -1805,26 +1808,35 @@ class CmdFEdit(default_cmds.MuxCommand):
         if not self.lhs:
             self.caller.msg("Syntax: %s <object>" % self.cmdname)
             return
-        what = self.caller.search(self.lhs, location=self.caller.location)
 
-        # Just quit if we didn't find anything. The search will handle the error message.
+        if "/" in self.lhs:
+            obj, attr = self.lhs.split("/")
+        else:
+            obj = self.lhs
+            attr = None
+        what = self.caller.search(obj, location=self.caller.location)
         if not what:
             return
 
+        if attr:
+            edit_text = what.attributes.get(attr, "")
+        else:
+            edit_text = what.db.desc or ""
         # Make sure that the caller has permission to modify the object.
         if not what.access(self.caller, "control") or not what.access(
             self.caller, "edit"
         ):
             self.caller.msg(
-                "You don't have permission to modify the description of that object."
+                "You don't have permission to modify the attributes of that object."
             )
             return
 
         # If the attr isn't present on the object, obj.db.desc will be None and this will cause
         # problems for us when we go to edit, so we default to an empty string.
-        desc = what.db.desc or ""
-
-        self.caller.msg(f"FugueEdit > @desc #{what.id}={desc}", options={"raw": True})
+        if not attr:
+            self.caller.msg(f"FugueEdit > @desc #{what.id}={edit_text}", options={"raw": True})
+        else:
+             self.caller.msg(f"FugueEdit > @set #{what.id}/{attr}={edit_text}", options={"raw": True}) 
 
 
 class CmdFriend(default_cmds.MuxCommand):
@@ -2553,3 +2565,52 @@ class CmdResList(default_cmds.MuxCommand):
 
         self.caller.msg(headers.banner("Power Armor Systems", self.caller, width=80))
         self.caller.msg(str(table))
+
+class CmdUnman(default_cmds.MuxCommand):
+    key = "unman"
+
+    def func(self):
+
+        if not self.caller.attributes.has('console'):
+            self.caller.msg("You are not manning a console.")
+            return 
+
+        target = self.caller.db.console
+        self.msg(f"You unman {target.name}.")
+        target.attributes.remove("user")
+        self.caller.attributes.remove("console")
+        target.location.msg_contents(f"{self.caller.name} unman {target.name}.", exclude=self.caller)
+
+
+class CmdMan(default_cmds.MuxCommand):
+    key = "man"
+
+
+    def func(self):
+        if not self.args:
+            self.msg("Usage: man <console>")
+            return
+
+        target = self.caller.search(self.args, candidates=self.caller.location.contents)
+        if not target:
+            return
+        
+        if not utils.inherits_from(target, "typeclasses.consoles.Console"):
+            self.msg("That is not a console.")
+            return
+
+        if target.attributes.has('user'):
+            if target.db.user == self.caller:
+                self.msg("You are already manning that console.")
+                return
+            else:
+                target.db.user.msg("You are no longer manning {target.console}.")
+                target.db.user.attributes.remove('console')
+                target.attributes.remove('user')
+
+        self.caller.db.console = target
+        target.db.user = self.caller
+        self.msg(f"You man {target.name}.")
+        self.caller.location.msg_contents(f"{self.caller.name} mans {target.name}.", exclude=self.caller)
+
+

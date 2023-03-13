@@ -106,6 +106,10 @@ class Character(
         # Clear places.
         if table := self.db.sitting_at_table or None:
             table.leave(self)
+        if console := self.db.console or None:
+            self.attributes.remove('console')
+            console.attributes.remove('user')
+            console.announce_unman(self)
             
     @lazy_property
     def keys(self):
@@ -125,6 +129,13 @@ class Character(
 
         if self.ndb.following and self.ndb.following.location != self.location:
             self.stop_follow()
+
+        console = self.db.console or None
+        if console:
+            self.attributes.remove('console')
+            console.attributes.remove('user')
+            console.announce_unman(self)
+
 
         super().at_after_move(source_location, **kwargs)
 

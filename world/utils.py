@@ -30,8 +30,8 @@ def twocol(items, width=80):
         out += x.ljust(colwidth-1)
         if i:
             out += "\n"
-        index += 1    
-    return f"{out}"
+        index += 1   
+    return out.rstrip()
 
 
 def itemize(items, prep='and', sep=', '):

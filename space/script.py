@@ -8,23 +8,23 @@ import os.path
 # Statee data
 STATE = None
 
+
 class SpaceScript(DefaultScript):
 
     def add_object(self, sobj):
+        # If the object is not scheduled for deletion...
         if sobj in self.deletions:
             return
-
-        if sobj not in self.insertions:
-           self.insertions.append(sobj)
+        self.insertions.append(sobj)
         cemit("space", f"{sobj.name} scheduled for insertion.")
 
     def del_object(self, sobj):
         if sobj in self.insertions:
-            return
-
-        if sobj not in self.deletions:
-            sobj.deletions.append(sobj) 
-        cemit("space", f"{sobj.name} scheduled for deletion.")
+            self.insertions.remove(sobj)
+            cemit("space", f"Deleted object {sobj.name} removed from insertions list")
+        else:
+            self.deletions.append(sobj) 
+            cemit("space", f"{sobj.name} scheduled for deletion.")
 
     """ Timer and data store """
     def at_script_creation(self) -> None:
@@ -33,15 +33,13 @@ class SpaceScript(DefaultScript):
         self.desc = "Space script"
         self.interval = 2  # 2 sec tick
         self.has_state = False
-        self.deletions = []
-        self.insertions = []
 
     def load_state(self):
         global STATE
 
         with open(SPACEDB, "rb") as f:
             STATE = pickle.load(f)
-        self.has_state = True if STATE else False
+        self.has_state = True
 
     def save_state(self):
         with open(SPACEDB, "wb") as f:
@@ -51,7 +49,7 @@ class SpaceScript(DefaultScript):
         tmp = f'{NAME} version {VERSION} Stats:'
         player.msg(tmp)
         player.msg("-" * len(tmp))
-        player.msg(f'Is Loaded: {"True" if STATE else "False"}')
+        player.msg(f'STATE: {STATE}')
         player.msg(f'  # Ships: {len(STATE.ship_list)}')
         player.msg(f'# Objects: {len(STATE.object_list)}')
 
@@ -63,8 +61,8 @@ class SpaceScript(DefaultScript):
     def at_server_start(self):
         global STATE
        
-        self.deletions = []
-        self.insertions = []
+        self.deletions = set()
+        self.insertions = set()
         cemit("space", f"Initializing {NAME} {VERSION}...")
         self.has_state = False
         if os.path.isfile(SPACEDB):
@@ -107,7 +105,7 @@ class SpaceScript(DefaultScript):
             for x in STATE.ship_list or []:
                 try:
                     x.cycle()
-                    cemit("space", f"Ship: {x.name}")
+                    #cemit("space", f"Ship: {x.name}")
                 except Exception as e:
                     cemit("space", f"Error in at_repeat(): {e}.")
                     continue

@@ -3,17 +3,24 @@
 An array of systems that can exist for a ship.
 In fact, the systems are stored in a linked list.
 '''
-
-class HSSystemArray(object):
+from .types import HSSystemTypes
+    
+class SystemsHandler(object):
     num_systems = 0
     power_use = 0
         
-    def __init__(self):
-        pass
-    
+    def __init__(self, obj):
+        self.obj = obj
+        self.num_systems = 0
+        self.power_use = 0
+        self.systems = []
+        
     def __eq__(self, what):
         pass
     
+    def get_name(self):
+        return self.name
+
     def add_system(self, system):
         pass
     
@@ -52,3 +59,19 @@ class HSSystemArray(object):
 
     def get_random_system(self):
         pass
+        
+        
+    def get_eng_system_name(self, sys):
+        for x in self.systems:
+            if x.name == sys:
+                return x.name
+        
+        return None
+    
+    def get_eng_system_type(self, sys):
+        for x in self.systems:
+            if x.type == sys:
+                return x.type
+
+        return HSST.NONE
+        

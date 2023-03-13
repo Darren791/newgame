@@ -8,6 +8,7 @@ from .typeclasses import DefaultSpaceObject
 from .objects import HSShip
 STATE = get_state()
 from .script import SpaceScript as SPACE
+from .systems import SystemsHandler
 
 class SpaceCommand(default_cmds.MuxCommand):
     key = "sdb"
@@ -15,6 +16,10 @@ class SpaceCommand(default_cmds.MuxCommand):
     sobj = None
     space = GLOBAL_SCRIPTS.space_script
 
+    def parse(self):
+        self.state = get_state()
+        super().parse()
+        
     def do_stats(self):
         self.space.get_status(self.caller)
 
@@ -31,6 +36,8 @@ class SpaceCommand(default_cmds.MuxCommand):
         self.space.active = True
         self.msg("Space is now cycling.")
         cemit("space", "Space is now active.")
+        self.msg(f"SystemHandler: {self.state.ship_list[0].systems}")
+        self.msg(self.state)
 
     def do_stop(self):
         self.space.active = False
@@ -38,15 +45,26 @@ class SpaceCommand(default_cmds.MuxCommand):
 
     def do_addship(self):
         if not self.rhs and not self.lhs:
-            self.msg("Usage: sdb/add <class>=<name>")
+            self.msg("Usage: sdb/addship <class>=<name>")
             return
+
         klass = match_class(self.lhs)
         if not klass:
             self.msg("No such class.")
             return
-
+            
+        if not self.state:
+            self.msg("System state cannot be determined.")
+            return
+        
+        sname = self.rhs.lower()
+        for x in self.state.ship_list:
+            if x.name.lower() == sname:
+                self.msg("A ship with that name already exists.")
+                return
+                
         ship = HSShip()
-        klass.name = self.rhs
+        klass.name = sname
 
         for x in (klass.__dict__.keys()):
             if  not x.startswith("_"):
@@ -54,12 +72,9 @@ class SpaceCommand(default_cmds.MuxCommand):
                 setattr(ship, x, getattr(klass, x))
 
 
-        self.msg(f"{self.rhs} created.")
+        self.msg(f"Ship \"{sname}\" created.")
         self.space.add_object(sobj=ship)
 
-
-        
-        
     def do_delship(self):
         self.caller.msg("REMOVE")
         

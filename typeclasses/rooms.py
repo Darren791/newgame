@@ -77,7 +77,7 @@ def sort_exits(elist: list) -> list:
 
 
 def format_exits(looker, width, exits):
-    return myutils.twocol([e.format_exit(user=looker) for e in sort_exits(exits)], width)
+    return f"{myutils.twocol([e.format_exit(user=looker) for e in sort_exits(exits)], width)}\n"
     
 
 # Display the players list for the room.
@@ -111,10 +111,10 @@ def format_players(looker, width=80, users=None):
     return line
 
 def format_contents(looker: Character = None, width: int = 80, contents: list = None):
-    return f"{myutils.twocol([x.name_format() for x in contents], width)}"
+    return f"{myutils.twocol([x.name_format() for x in contents], width)}\n"
 
 def format_places(looker, width, places):
-    return f"{myutils.twocol([x.name_format() for x in places], width)}"
+    return f"{myutils.twocol([x.name_format() for x in places], width)}\n"
 
 
 class Room(MessageMixins, NameMixins, OwnerMixins, TypeMixins, DefaultRoom):

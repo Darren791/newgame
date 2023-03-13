@@ -79,7 +79,8 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdTest())
         self.add(CmdResList())
         self.add(SpaceCommand())
-        
+        self.add(CmdMan())
+        self.add(CmdUnman())
            
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """

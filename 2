@@ -1,25 +1,21 @@
-"""
-"""
-from evennia.utils import lazy_property
+from enum import Enum
 from world.utils import cemit
 from .vector import HSVector
-from .types import HSOT
+from evennia.utils import lazy_property
+from .types import HSOT, HSST, HSD
 from .system import SystemsHandler
 
 DBVERSION = "1.0"
 SPACEDB = "space/space.bin"
-NAME = "eSpace"
+NAME 	= "eSpace"
 VERSION = "0.2"
 
 
-class SpaceInstance():
-    """
-    """
-
-    ship_list = set()
-    object_list = set()
-    insertions = set()
-    deletions = set()
+class SpaceInstance(object):
+    ship_list = []
+    object_list = []
+    insertions = []
+    deletions = []
     active = False
     clean = True
     version = DBVERSION
@@ -41,9 +37,7 @@ class SpaceInstance():
             try:
                 sl.cycle()
             except Exception as e:
-                cemit("space", f"Exception: {e}.")
                 continue
-        
         if self.deletions:
             pass
 
@@ -58,7 +52,7 @@ class HSObject:
         self.type = HSOT.GENERIC
         self.key = 0
         self.set_motion_vector()
-
+    
     def set_motion_vector(self, i=0, j=0, k=0):
         self.motion_vector = HSVector(i, j, k)
 
@@ -94,18 +88,16 @@ class HSShip(HSObject):
     drop_status = 0
     dock_status = 0
     age = 0
-    heat_pool = 10
-    heat_points = 0
-    reactor_online = False
-    ghosted = False
+
+    bReactorOnline = False
+    bGhosted = False
     in_space = True
     docked = False
     dropped = False
     destroyed = False
 
     def is_active(self):
-        if (not self.docked and not self.dropped and
-                self.in_space and not self.destroyed):
-            return True
+        if (not self.docked and not self.dropped and self.in_space and not self.destroyed):
+                return True
 
         return False
