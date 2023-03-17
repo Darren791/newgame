@@ -4,8 +4,9 @@ An array of systems that can exist for a ship.
 In fact, the systems are stored in a linked list.
 '''
 from .types import HSOT, HSST, HSD
+from world.utils import match_all
 
-HSSystemTpes = (                                                                                                                                                                                                                           
+HSSystemTypes = (                                                                                                                                                                                                                           
     ("Reactor",        HSST.REACTOR),
     ("Life Support",     HSST.LIFE_SUPPORT),
     ("Internal Computer",  HSST.COMPUTER),
@@ -31,6 +32,16 @@ class SystemsHandler(object):
     num_systems = 0
     power_use = 0
         
+    def match_system_by_name(self, target):
+        ret = match_all((x[0] for x in HSSystemTypes), target)
+        return ret
+
+    def match_system_by_type(self, val):
+        return [x for x in self.systems if x.type == val]
+
+    def has(self, res):
+        ret = [x for x in self.systems if x.type == val
+                ]
     def __init__(self, obj):
         self.obj = obj
         self.num_systems = 0
@@ -45,13 +56,17 @@ class SystemsHandler(object):
         return self.name
 
     def add_system(self, system):
-        pass
+        self.systems.append(system)
     
     def del_system(self, system):
-        pass
+        self.systems.remove(system)
     
-    def do_cycle(self):
-        pass
+    def cycle(self):
+        for x in self.systems:
+            try:
+               x.cycle()
+            except Exception as e:
+                cemit("space", f"Error {e} in SystemsHandler.do_cycle()")
 
     def update_power_use(self):
         pass

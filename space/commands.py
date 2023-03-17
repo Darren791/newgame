@@ -12,7 +12,8 @@ from .systems import SystemsHandler
 
 class SpaceCommand(default_cmds.MuxCommand):
     key = "sdb"
-    switchtab = ("addship", "delship", "list", "stats", "save", "load", "start", "stop",)
+    switchtab = ("addship", "delship", "list", "stats", "save", "load", "start", 
+            "stop", "addsystem", "delsystem", "sysset", "set")
     sobj = None
     space = GLOBAL_SCRIPTS.space_script
 
@@ -20,6 +21,20 @@ class SpaceCommand(default_cmds.MuxCommand):
         self.state = get_state()
         super().parse()
         
+    def do_sysset(self):
+        sobj = self.state.ship_list[0]
+        ret = sobj.systems.match_system_by_name(self.lhs)
+        self.msg(f"Found: {ret}")
+
+    def do_set(self):
+        pass
+
+    def do_addsystem(self):
+        pass
+
+    def do_delsystem(self):
+        pass
+
     def do_stats(self):
         self.space.get_status(self.caller)
 

@@ -103,9 +103,16 @@ class HSShip(HSObject):
     dropped = False
     destroyed = False
 
+    @lazy_property
+    def systems(self):
+        return SystemsHandler(self)
+
     def is_active(self):
         if (not self.docked and not self.dropped and
                 self.in_space and not self.destroyed):
             return True
 
         return False
+
+    def cycle(self):
+        self.systems.cycle()
