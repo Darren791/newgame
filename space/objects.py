@@ -10,7 +10,7 @@ DBVERSION = "1.0"
 SPACEDB = "space/space.bin"
 NAME = "eSpace"
 VERSION = "0.2"
-
+SCRIPT = "space_script"
 
 class SpaceInstance():
     """

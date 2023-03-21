@@ -28,8 +28,9 @@ class CmdKey(default_cmds.MuxCommand):
        key/list : Displays all of the keys in your keyring.
 
        key/desc <key>=<text> : Adds an optional, short description to a key
-                               which you will be able to use to manage keys
-                               later.
+                               which can be used to search for and otherwise
+                               manage your keys. For example, "Jill's Room".
+                               
 
        key/retract <player>[=<door>] : Removes key(s) given to a specific
                                        player.  If called with the optional
@@ -56,7 +57,7 @@ class CmdKey(default_cmds.MuxCommand):
 
     * Room owners may use a privacy lock to temporarily disable access via room keys.
 
-    * If the room owner has you on ignore, they must first authorize your key to be used
+    * Note that keys will not work if the owner of the room has you on ignore.
 
     """
 

@@ -29,7 +29,7 @@ class SpaceScript(DefaultScript):
     """ Timer and data store """
     def at_script_creation(self) -> None:
         """Called once, when script is first created"""
-        self.key = "space"
+        self.key = "space_script"
         self.desc = "Space script"
         self.interval = 2  # 2 sec tick
         self.has_state = False
@@ -71,6 +71,8 @@ class SpaceScript(DefaultScript):
                 cemit("space", "|RFailed to initialize state handler.|n")
                 self.active = False
                 return
+            else:
+                cemit("space", "State handler initialized.")
         else:
             STATE = SpaceInstance()
             self.has_state = True
